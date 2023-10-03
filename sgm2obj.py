@@ -106,6 +106,7 @@ def write_obj(meshes, materials, filename):
             color = m["colors"][0]
             r, g, b, a = color[0]
             mtl_file.write(f"Kd {r} {g} {b}\n")
+            mtl_file.write(f"d {a}\n")
             
             for uv_images in m["uv_data"]:
                 for texname, _ in uv_images:
@@ -123,8 +124,12 @@ def write_obj(meshes, materials, filename):
                 f.write(f'vn {v[1][0]} {v[1][1]} {v[1][2]}\n')
                 if v[2]:
                     f.write(f'vt {v[2][0][0]} {1-v[2][0][1]}\n')
+                else:
+                    f.write('vt 0 0\n') # Preserve indicies in case first material doesn't have a uv map but 2nd does
             for i in range(0, len(indices), 3):
-                f.write(f'f {indices[i] + 1}/{indices[i] + 1}/{indices[i] + 1} {indices[i + 1] + 1}/{indices[i + 1] + 1}/{indices[i + 1] + 1} {indices[i + 2] + 1}/{indices[i + 2] + 1}/{indices[i + 2] + 1}\n')
-
+                if len(vertices[0][2]) > 0: # Quick hack to check if there's a UV map for this material
+                    f.write(f'f {indices[i] + 1}/{indices[i] + 1}/{indices[i] + 1} {indices[i + 1] + 1}/{indices[i + 1] + 1}/{indices[i + 1] + 1} {indices[i + 2] + 1}/{indices[i + 2] + 1}/{indices[i + 2] + 1}\n')
+                else:
+                    f.write(f'f {indices[i] + 1}//{indices[i] + 1} {indices[i + 1] + 1}//{indices[i + 1] + 1} {indices[i + 2] + 1}//{indices[i + 2] + 1}\n')
 if __name__ == '__main__':
     main()
